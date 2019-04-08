@@ -68,10 +68,18 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io -y
 # remove old easy_install dependency that no longer works with 18.04
 sudo sed -i 's/easy_install/pip/' /usr/local/share/kolla-ansible/ansible/roles/baremetal/tasks/install.yml
 
-# get kolla running 
+# get kolla running
 sudo kolla-ansible -i ./all-in-one bootstrap-servers
 sudo kolla-ansible -i ./all-in-one prechecks
 # temporary workaround to probable bug:
 sudo sed -i "1s/^/127.0.0.1 $HOSTNAME\n/" /etc/hosts
 # and finally deploy
 sudo kolla-ansible -i ./all-in-one deploy
+
+# post installation
+sudo pip install python-openstackclient python-glanceclient python-neutronclient
+sudo kolla-ansible -i ./all-in-one post-deploy
+. /etc/kolla/admin-openrc.sh
+. kolla-ansible/tools/init-runonce
+# at this point take care of the designate configurations via cli
+# TODO: add such configurations here as well
