@@ -1,6 +1,7 @@
 #!/bin/bash
 ### kolla-ansible, all-in-one + designate, ###
 ### source, stein, bionic, as of 20190408  ###
+### v1 (not tested as a single executable) ###
 
 # dependencies
 sudo apt-get update
@@ -47,9 +48,9 @@ sudo sed -i 's/#kolla_install_type: \"binary\"/kolla_install_type: \"source\"/' 
 sudo sed -i 's/#openstack_release: \"\"/openstack_release: \"stein\"/' /etc/kolla/globals.yml
 sudo sed -i 's/kolla_internal_vip_address: \"10.10.10.254\"/kolla_internal_vip_address: \"192.168.2.100\"/' /etc/kolla/globals.yml
 sudo sed -i 's/#network_interface: \"eth0\"/network_interface: \"enp1s0\"/' /etc/kolla/globals.yml
-sudo sed -i 's/#neutron_external_interface: \"eth1\"/neutron_external_interface: \"ens5f3\"/' /etc/kolla/globals.yml
+sudo sed -i 's/#neutron_external_interface: \"eth1\"/neutron_external_interface: \"enx00e04c696ea8\"/' /etc/kolla/globals.yml
 
-# additional configuration - designate
+# additional configuration (designate)
 sudo sed -i 's/#enable_designate: \"no\"/enable_designate: \"yes\"/' /etc/kolla/globals.yml
 sudo sed -i 's/#designate_backend: \"bind9\"/designate_backend: \"bind9\"/' /etc/kolla/globals.yml
 sudo sed -i 's/#designate_ns_record: \"sample.openstack.org\"/designate_ns_record: \"homedc.local\"/' /etc/kolla/globals.yml
@@ -81,5 +82,6 @@ sudo pip install python-openstackclient python-glanceclient python-neutronclient
 sudo kolla-ansible -i ./all-in-one post-deploy
 . /etc/kolla/admin-openrc.sh
 . kolla-ansible/tools/init-runonce
+
 # at this point take care of the designate configurations via cli
 # TODO: add such configurations here as well
