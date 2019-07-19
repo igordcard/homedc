@@ -61,6 +61,11 @@ iptables -t nat -A PREROUTING -i cni0 -p tcp -j CHAMELEONSOCKS
 iptables -t nat -A PREROUTING -i virbr0 -p tcp -j CHAMELEONSOCKS
 iptables -t nat -A PREROUTING -i lxcbr0 -p tcp -j CHAMELEONSOCKS
 
+cat > /etc/apt/apt.conf.d/00proxy << EOF
+Acquire::http::Proxy "";
+Acquire::https::Proxy "";
+EOF
+
 unset HTTP_PROXY
 unset HTTPS_PROXY
 unset http_proxy
