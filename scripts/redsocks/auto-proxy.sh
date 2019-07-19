@@ -1,19 +1,29 @@
 #!/bin/bash
-### igordc, 20190622    ###
+### igordc, 20190622,   ###
+###         20190719    ###
 ### run as root  user   ###
 ### ran fine on 16.04.6 ###
 ### ran fine on 18.04.2 ###
+### TODO use containerd ###
 
 #sudo su -
 cd
 
 # CHANGE THIS:
-HTTP_PROXY=server.localhost:port
-SOCKS_PROXY=server.localhost
+HTTP_PROXY=http://server.localhost:port
+HTTPS_PROXY=http://server.localhost:port
+SOCKS_PROXY=server.localhost # assumes port 1080
 
 # temporary proxy settings
-export http_proxy=http://$HTTP_PROXY
-export https_proxy=https://$HTTP_PROXY
+export HTTP_PROXY
+export HTTPS_PROXY
+export http_proxy=$HTTP_PROXY
+export https_proxy=$HTTPS_PROXY
+
+cat > /etc/apt/apt.conf.d/00proxy << EOF
+Acquire::http::Proxy "$HTTP_PROXY";
+Acquire::https::Proxy "$HTTPS_PROXY";
+EOF
 
 # and install docker-ce manually, with the following steps
 apt-get remove docker docker-engine docker.io containerd runc -y
@@ -49,3 +59,9 @@ chmod +x chameleonsocks.sh
 
 iptables -t nat -A PREROUTING -i cni0 -p tcp -j CHAMELEONSOCKS
 iptables -t nat -A PREROUTING -i virbr0 -p tcp -j CHAMELEONSOCKS
+iptables -t nat -A PREROUTING -i lxcbr0 -p tcp -j CHAMELEONSOCKS
+
+unset HTTP_PROXY
+unset HTTPS_PROXY
+unset http_proxy
+unset https_proxy
