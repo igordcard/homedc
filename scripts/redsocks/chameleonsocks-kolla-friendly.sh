@@ -28,9 +28,9 @@ ADDITIONAL_PROXY_EXCEPTIONS=""         # edit
 # -> also edit dns stuff below
 
 ROUTER=demo-router # change according to external router's name
-ROUTER_ID=$(openstack router show $EXT_ROUTER -f yaml | grep -E "^id" | cut -d ":" -f 2 | awk '{$1=$1;print}')
-GW_PORT_ID=$(openstack port list -c id -c device_owner --device-id $EXT_ROUTER_ID | grep router_gateway | cut -d "|" -f 2 | awk '{$1=$1;print}')
-INT_PORT_IDS=($(openstack port list -c id -c device_owner --device-id $EXT_ROUTER_ID | grep router_interface | cut -d "|" -f 2 | awk '{$1=$1;print}' | xargs))
+ROUTER_ID=$(openstack router show $ROUTER -f yaml | grep -E "^id" | cut -d ":" -f 2 | awk '{$1=$1;print}')
+GW_PORT_ID=$(openstack port list -c id -c device_owner --device-id $ROUTER_ID | grep router_gateway | cut -d "|" -f 2 | awk '{$1=$1;print}')
+INT_PORT_IDS=($(openstack port list -c id -c device_owner --device-id $ROUTER_ID | grep router_interface | cut -d "|" -f 2 | awk '{$1=$1;print}' | xargs))
 
 
 # fix DNS for the netns (edit nameserver addresses and search domain):
