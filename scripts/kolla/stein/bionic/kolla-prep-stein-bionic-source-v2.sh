@@ -2,17 +2,27 @@
 ### kolla-prep: Igor D.C.           ###
 ### kolla-ansible, all-in-one       ###
 ### stein, bionic, source           ###
-### v2, as of 20190615+             ### 
+### v2:                             ###
+### 20190615+, 20190807+, 20190830  ###
 ### not tested as single executable ###
 ### run as normal user              ###
+DCNAME='homedc'
+HOSTIP='192.168.2.20'
 
 cd
 
-sudo apt-get update
-sudo apt-get install build-essential virtualenv python-virtualenv python-dev libffi-dev gcc libssl-dev python-selinux python-setuptools -y
+### Required before proceeding when behind proxy: chameleonsocks-auto-proxy.sh
 
-virtualenv --clear homedc
-source homedc/bin/activate
+sudo apt-get update
+sudo apt-get install build-essential python-dev libffi-dev gcc libssl-dev python-selinux python-setuptools -y
+sudo apt-get remove python-pip python3-pip python-virtualenv python3-virtualenv -y
+
+wget https://bootstrap.pypa.io/get-pip.py
+sudo python get-pip.py
+pip install --user virtualenv
+
+virtualenv --clear $DCNAME
+source $DCNAME/bin/activate
 pip install -U pip ansible
 
 # kolla-ansible source installation (better for development)
@@ -30,6 +40,7 @@ cp kolla-ansible/ansible/inventory/* .
 
 # ansible configuration
 sudo mv /etc/ansible/ansible.cfg /etc/ansible/ansible.cfg.bak
+sudo mkdir /etc/ansible
 sudo touch /etc/ansible/ansible.cfg
 sudo bash -c 'cat <<EOT > /etc/ansible/ansible.cfg
 [defaults]
@@ -46,10 +57,10 @@ EOT'
 sed -i 's/#kolla_base_distro: \"centos\"/kolla_base_distro: \"ubuntu\"/' /etc/kolla/globals.yml
 sed -i 's/#kolla_install_type: \"binary\"/kolla_install_type: \"source\"/' /etc/kolla/globals.yml
 sed -i 's/#openstack_release: \"\"/openstack_release: \"stein\"/' /etc/kolla/globals.yml
-sed -i 's/kolla_internal_vip_address: \"10.10.10.254\"/kolla_internal_vip_address: \"192.168.2.20\"/' /etc/kolla/globals.yml
+sed -i "s/#kolla_internal_vip_address: \"10.10.10.254\"/kolla_internal_vip_address: \"$HOSTIP\"/" /etc/kolla/globals.yml
 sed -i 's/#network_interface: \"eth0\"/network_interface: \"enp1s0\"/' /etc/kolla/globals.yml
-sed -i 's/#neutron_external_interface: \"eth1\"/neutron_external_interface: \"ens5f3\"/' /etc/kolla/globals.yml
-sed -i 's/#enable_haproxy: \"yes\"/enable_haproxy: \"no\"/' /etc/kolla/globals.yml
+sed -i "s/#neutron_external_interface: \"eth1\"/neutron_external_interface: \"ens5f3\"/" /etc/kolla/globals.yml
+sed -i "s/#enable_haproxy: \"yes\"/enable_haproxy: \"no\"/" /etc/kolla/globals.yml
 
 # and install docker-ce manually, with the following steps
 sudo apt-get remove docker docker-engine docker.io containerd runc -y
@@ -77,11 +88,11 @@ pip install -U python-openstackclient python-glanceclient python-neutronclient
 # create basic OpenStack resources (uses CLI above)
 ./kolla-ansible/tools/init-runonce
 
+### When behind proxy, VMs can be used proxy-unaware with: chameleonsocks-kolla-friendly.sh
 
 # To destroy:
-
-# source homedc/bin/activate
-# ./kolla-ansible/tools/kolla-ansible -i ./all-in-one destroy --yes-i-really-really-mean-it
-# sudo rm -rf /etc/kolla/
-# deactivate
-# rm -rf homedc
+# source $DCNAME/bin/activate
+./kolla-ansible/tools/kolla-ansible -i ./all-in-one destroy --yes-i-really-really-mean-it
+sudo rm -rf /etc/kolla/
+deactivate
+rm -rf $DCNAME
