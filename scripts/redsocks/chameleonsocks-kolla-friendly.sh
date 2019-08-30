@@ -64,7 +64,7 @@ echo "1.2" > /etc/chameleonsocks-version
 echo $ADDITIONAL_PROXY_EXCEPTIONS >> /etc/chameleonsocks.exceptions
 
 # start chameleonsocks, TODO service
-./chameleonsocks-local &
+./chameleonsocks &
 
 # allow traffic from OpenStack internal networks to use chameleonsocks
 for intf in "${INT_PORT_IDS[@]}"
